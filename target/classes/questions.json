@@ -1,0 +1,17 @@
+{
+  "TYPE": {
+    "text": "What type of game are you looking for?",
+    "answers": [
+      "STRATEGY GAME",
+      "WARGAME"
+    ]
+  },
+
+  "HOW MANY": {
+    "text": "For how many players?",
+    "answers": [
+      "JUST ME",
+      "2 OR MORE"
+    ]
+  }
+}

@@ -1,0 +1,1281 @@
+package rules
+
+import java.util.List
+import java.util.Arrays
+
+/* =========================================================
+   FAKTY
+   ========================================================= */
+
+declare GUIState
+    text:String;
+    options:List;
+    answer:String;
+    stage:String;
+end
+
+declare Recommendation
+    title:String;
+end
+
+/* =========================================================
+   START
+   ========================================================= */
+
+rule "Start – wybór typu gry"
+when
+    not GUIState()
+then
+    insert(
+        new GUIState(
+            "What type of game are you looking for?",
+            Arrays.asList("WARGAME", "STRATEGY GAME"),
+            null,
+            "START"
+        )
+    );
+end
+
+/* =========================================================
+   PYTANIA
+   ========================================================= */
+
+rule "Wargame – How many"
+when
+    $gui : GUIState( stage == "START", answer == "WARGAME" )
+then
+    $gui.setText("For how many players?");
+    $gui.setOptions(Arrays.asList("2 OR MORE", "JUST ME"));
+    $gui.setAnswer(null);
+    $gui.setStage("HOW_MANY");
+    update($gui);
+end
+
+rule "Wargame solo – theme"
+when
+    $gui : GUIState( stage == "HOW_MANY", answer == "JUST ME" )
+then
+    $gui.setText("");
+    $gui.setOptions(Arrays.asList("HISTORIC BATTLES", "MODERN AIR SUPPORT", "SCIENCE FICTION"));
+    $gui.setAnswer(null);
+    $gui.setStage("SOLO_THEME");
+    update($gui);
+end
+
+rule "Wargame – exp"
+when
+    $gui : GUIState( stage == "HOW_MANY", answer == "2 OR MORE" )
+then
+    $gui.setText("Do you have any wargaming experience?");
+    $gui.setOptions(Arrays.asList("IT'S NEW TO ME", "YES"));
+    $gui.setAnswer(null);
+    $gui.setStage("EXPERIENCE");
+    update($gui);
+end
+
+rule "New player – Risk"
+when
+    $gui : GUIState( stage == "EXPERIENCE", answer == "IT'S NEW TO ME" )
+then
+    $gui.setText("Are you a fan of Risk?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("RISK");
+    update($gui);
+end
+
+rule "Risk – no"
+when
+    $gui : GUIState( stage == "RISK", answer == "NO" )
+then
+    $gui.setText("World History, or High Fantasy?");
+    $gui.setOptions(Arrays.asList("WORLD HISTORY", "HIGH FANTASY"));
+    $gui.setAnswer(null);
+    $gui.setStage("HISTORY_OR_FANTASY");
+    update($gui);
+end
+
+rule "Exp – Rzym"
+when
+    $gui : GUIState( stage == "EXPERIENCE", answer == "YES" )
+then
+    $gui.setText("Do you want to command Roman legions?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("ROMANS");
+    update($gui);
+end
+
+rule "Rzym – no"
+when
+    $gui : GUIState( stage == "ROMANS", answer == "NO" )
+then
+    $gui.setText("Lead 19th Century battle lines?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("BATTLE_LINES");
+    update($gui);
+end
+
+rule "Battle Lines – no - WW2"
+when
+    $gui : GUIState( stage == "BATTLE_LINES", answer == "NO" )
+then
+    $gui.setText("How about World War II?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("WW2");
+    update($gui);
+end
+
+rule "WW2 – yes - game mechanic"
+when
+    $gui : GUIState( stage == "WW2", answer == "YES" )
+then
+    $gui.setText("Card- or dice- driven combat?");
+    $gui.setOptions(Arrays.asList("*ROLL ROLL ROLL*", "*SHUFFLE SHUFFLE*"));
+    $gui.setAnswer(null);
+    $gui.setStage("DRIVEN_COMBAT");
+    update($gui);
+end
+
+rule "WW2 – no - Modern Warfare"
+when
+    $gui : GUIState( stage == "WW2", answer == "NO" )
+then
+    $gui.setText("Modern Warfare, then?");
+    $gui.setOptions(Arrays.asList("YES, I LIKE THE IMMEDIACY", "NO, I'M TIRED OF REAL WARS"));
+    $gui.setAnswer(null);
+    $gui.setStage("MODERN_WAR");
+    update($gui);
+end
+
+rule "Modern Warfare – no - SF or ALT"
+when
+    $gui : GUIState( stage == "MODERN_WAR", answer == "NO, I'M TIRED OF REAL WARS" )
+then
+    $gui.setText("Science Fiction or alternate history?");
+    $gui.setOptions(Arrays.asList("ALT_HISTORY", "SCIENCE_FICTION"));
+    $gui.setAnswer(null);
+    $gui.setStage("SF_OR_ALT");
+    update($gui);
+end
+
+rule "Alt-history – scale of game"
+when
+    $gui : GUIState( stage == "SF_OR_ALT", answer == "ALT_HISTORY" )
+then
+    $gui.setText("Tactical miniatures or large-scale strategy?");
+    $gui.setOptions(Arrays.asList("STRATEGIC", "TACTICAL"));
+    $gui.setAnswer(null);
+    $gui.setStage("TAC_OR_STRAT");
+    update($gui);
+end
+
+rule "Sci-Fi – ships or MECHA!"
+when
+    $gui : GUIState( stage == "SF_OR_ALT", answer == "SCIENCE_FICTION" )
+then
+    $gui.setText("Space ships or giant robots?");
+    $gui.setOptions(Arrays.asList("SHIPS", "MECHS"));
+    $gui.setAnswer(null);
+    $gui.setStage("SHIPS_OR_MECHS");
+    update($gui);
+end
+
+rule "Strategy – Theme"
+when
+    $gui : GUIState( stage == "START", answer == "STRATEGY GAME" )
+then
+    $gui.setText("What's your favurite theme?");
+    $gui.setOptions(Arrays.asList("FANTASY", "HORROR", "SCIENCE FICTION"));
+    $gui.setAnswer(null);
+    $gui.setStage("THEME");
+    update($gui);
+end
+
+rule "Strategy – Star Wars Fan"
+when
+    $gui : GUIState( stage == "THEME", answer == "SCIENCE FICTION" )
+then
+    $gui.setText("Star Wars fan?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("STAR_WARS_FAN");
+    update($gui);
+end
+
+rule "Strategy – Star Trek"
+when
+    $gui : GUIState( stage == "STAR_WARS_FAN", answer == "NO" )
+then
+    $gui.setText("Star Trek, then?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("STAR_TREK");
+    update($gui);
+end
+
+rule "Star Trek – One on one or together"
+when
+    $gui : GUIState( stage == "STAR_TREK", answer == "YES" )
+then
+    $gui.setText("One-on-one or working together?");
+    $gui.setOptions(Arrays.asList("COMPETETIVE", "COOPERATIVE"));
+    $gui.setAnswer(null);
+    $gui.setStage("ONE_OR_TOGETHER");
+    update($gui);
+end
+
+rule "Strategy – Battlestar Galactica?"
+when
+    $gui : GUIState( stage == "STAR_TREK", answer == "NO" )
+then
+    $gui.setText("Battlestar Galactica?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("BATTLESTAR");
+    update($gui);
+end
+
+rule "EEEE"
+when
+    $gui : GUIState( stage == "BATTLESTAR", answer == "NO" )
+then
+    $gui.setText("Explore, Expand, Exploit and Exterminate?");
+    $gui.setOptions(Arrays.asList("OF COURSE!", "THAT'S NOT RIGHT!"));
+    $gui.setAnswer(null);
+    $gui.setStage("EEEE");
+    update($gui);
+end
+
+rule "How Epic"
+when
+    $gui : GUIState( stage == "EEEE", answer == "OF COURSE!" )
+then
+    $gui.setText("So, just how epic are we getting?");
+    $gui.setOptions(Arrays.asList("WE'VE GOT ALL DAY", "IT IS A WORK NIGHT..."));
+    $gui.setAnswer(null);
+    $gui.setStage("HOW_EPIC");
+    update($gui);
+end
+
+rule "Alien Race"
+when
+    $gui : GUIState( stage == "EEEE", answer == "THAT'S NOT RIGHT!" )
+then
+    $gui.setText("How about being an alien race?");
+    $gui.setOptions(Arrays.asList("MAYBE NOT", "THAT SOUNDS FUN"));
+    $gui.setAnswer(null);
+    $gui.setStage("ALIEN_RACE");
+    update($gui);
+end
+
+rule "Doing Battle"
+when
+    $gui : GUIState( stage == "ALIEN_RACE", answer == "THAT SOUNDS FUN" )
+then
+    $gui.setText("Doing battle...");
+    $gui.setOptions(Arrays.asList("IN SPACE", "FOR THE GALACTIC CENTRE", "FOR EARTH!"));
+    $gui.setAnswer(null);
+    $gui.setStage("DOING_BATTLE");
+    update($gui);
+end
+
+rule "Card Game"
+when
+    $gui : GUIState( stage == "ALIEN_RACE", answer == "MAYBE NOT" )
+then
+    $gui.setText("How about a card game?");
+    $gui.setOptions(Arrays.asList("SURE, THAT WORKS", "I LIKE MY BOARDS"));
+    $gui.setAnswer(null);
+    $gui.setStage("CARD_GAME");
+    update($gui);
+end
+
+rule "Deck Builder"
+when
+    $gui : GUIState( stage == "CARD_GAME", answer == "SURE, THAT WORKS" )
+then
+    $gui.setText("A Deck Builder?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("DECK_BUILDER");
+    update($gui);
+end
+
+rule "Not Alien"
+when
+    $gui : GUIState( stage == "CARD_GAME", answer == "I LIKE MY BOARDS" )
+then
+    $gui.setText("If not alien, I'll be a...");
+    $gui.setOptions(Arrays.asList(
+        "SPACE CREW ON A MISSION",
+        "MERCHANT",
+        "ATHLETE",
+        "GALACTIC CORPORATION"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("NOT_ALIEN");
+    update($gui);
+end
+
+rule "How Will You Succeed"
+when
+    $gui : GUIState( stage == "NOT_ALIEN", answer == "SPACE CREW ON A MISSION" )
+then
+    $gui.setText("How will you succeed?");
+    $gui.setOptions(Arrays.asList(
+        "TEAMWORK AND HIGH-SPEED PLANNING",
+        "TEAMWORK AND DEXTERITY"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("HOW_WILL");
+    update($gui);
+end
+
+rule "Not Alien – Merchant – Seriously"
+when
+    $gui : GUIState( stage == "NOT_ALIEN", answer == "MERCHANT" )
+then
+    $gui.setText("Seriously?");
+    $gui.setOptions(Arrays.asList(
+        "IT'S SERIOUS BUSINESS",
+        "NAH, WE JUST WANT A GIGGLE"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("SERIOUSLY");
+    update($gui);
+end
+
+rule "Deck Builder – Living Card"
+when
+    $gui : GUIState( stage == "DECK_BUILDER", answer == "NO" )
+then
+    $gui.setText("A Living Card Game?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("LIVING_CARD");
+    update($gui);
+end
+
+rule "Fantasy – Dungeon Crawling"
+when
+    $gui : GUIState( stage == "THEME", answer == "FANTASY" )
+then
+    $gui.setText("Do you want a dungeon crawling adventure?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("DUNGEON_CRAWLING");
+    update($gui);
+end
+
+rule "Dungeon Crawling – Serious"
+when
+    $gui : GUIState( stage == "DUNGEON_CRAWLING", answer == "YES" )
+then
+    $gui.setText("A serious one?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("SERIOUS_ONE");
+    update($gui);
+end
+
+rule "How Many Players"
+when
+    $gui : GUIState( stage == "SERIOUS_ONE", answer == "YES" )
+then
+    $gui.setText("How many players?");
+    $gui.setOptions(Arrays.asList("JUST THE TWO OF US", "MORE THAN TWO"));
+    $gui.setAnswer(null);
+    $gui.setStage("HOW_MANY_PLAYERS");
+    update($gui);
+end
+
+rule "Fight or Maneuver"
+when
+    $gui : GUIState( stage == "HOW_MANY_PLAYERS", answer == "JUST THE TWO OF US" )
+then
+    $gui.setText("Crush or out-meneuver your enemies?");
+    $gui.setOptions(Arrays.asList("FIGHT", "MANEUVER"));
+    $gui.setAnswer(null);
+    $gui.setStage("FIGHT_OR_MANEVUER");
+    update($gui);
+end
+
+rule "Coop or Competitive"
+when
+    $gui : GUIState( stage == "HOW_MANY_PLAYERS", answer == "MORE THAN TWO" )
+then
+    $gui.setText("Cooperative or Competetive?");
+    $gui.setOptions(Arrays.asList("COOPERATIVE", "COMPETITIVE"));
+    $gui.setAnswer(null);
+    $gui.setStage("COOP_OR_COM");
+    update($gui);
+end
+
+rule "Kids"
+when
+    $gui : GUIState( stage == "COOP_OR_COM", answer == "COOPERATIVE" )
+then
+    $gui.setText("Playing with kids?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("KIDS");
+    update($gui);
+end
+
+rule "Campaign"
+when
+    $gui : GUIState( stage == "COOP_OR_COM", answer == "COMPETITIVE" )
+then
+    $gui.setText("Do you want a campaign?");
+    $gui.setOptions(Arrays.asList("YES", "JUST ONE GAME"));
+    $gui.setAnswer(null);
+    $gui.setStage("CAMPAIGN");
+    update($gui);
+end
+
+rule "Managing Your Dungeon"
+when
+    $gui : GUIState( stage == "DUNGEON_CRAWLING", answer == "NO" )
+then
+    $gui.setText("How about managing your own dungeon?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("MANAGING_DUNGEON");
+    update($gui);
+end
+
+rule "Quests"
+when
+    $gui : GUIState( stage == "MANAGING_DUNGEON", answer == "NO" )
+then
+    $gui.setText("Want the whole questing thing, eh?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("QUESTS");
+    update($gui);
+end
+
+rule "Deckbuilders"
+when
+    $gui : GUIState( stage == "QUESTS", answer == "NO" )
+then
+    $gui.setText("Do you like Deckbuilders?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("DECKBUILDERS");
+    update($gui);
+end
+
+rule "Comp or Coop Quests"
+when
+    $gui : GUIState( stage == "QUESTS", answer == "YES" )
+then
+    $gui.setText("Competitive or Cooperative");
+    $gui.setOptions(Arrays.asList(
+        "COMPETITIVE",
+        "COOPERATIVE - IF I CAN BACKSTAB",
+        "COOPERATIVE"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("COMP_OR_COOP_QUESTS");
+    update($gui);
+end
+
+rule "Random Events"
+when
+    $gui : GUIState( stage == "COMP_OR_COOP_QUESTS", answer == "COMPETITIVE" )
+then
+    $gui.setText("Mind getting trounced by random events?");
+    $gui.setOptions(Arrays.asList(
+        "YES. STRATEGY MATTERS",
+        "NO, IT'S THE EXPERIENCE THAT COUNTS"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("RANDOM_EVENTS");
+    update($gui);
+end
+
+rule "Board or Card"
+when
+    $gui : GUIState( stage == "COMP_OR_COOP_QUESTS", answer == "COOPERATIVE" )
+then
+    $gui.setText("Board game or card game?");
+    $gui.setOptions(Arrays.asList("BOARDS", "CARDS"));
+    $gui.setAnswer(null);
+    $gui.setStage("BOARD_OR_CARD");
+    update($gui);
+end
+
+rule "Random events importance"
+when
+    $gui : GUIState( stage == "RANDOM_EVENTS", answer == null )
+then
+    $gui.setText("Random Events?");
+    $gui.setOptions(Arrays.asList("YES. STRATEGY MATTERS", "NO, IT'S THE EXPERIENCE THAT COUNTS"));
+    $gui.setStage("RANDOM_EVENTS");
+    update($gui);
+end
+
+rule "Storytelling question"
+when
+    $gui : GUIState( stage == "RANDOM_EVENTS", answer == "NO, IT'S THE EXPERIENCE THAT COUNTS" )
+then
+    $gui.setText("Is storytelling important?");
+    $gui.setOptions(Arrays.asList("YES", "NOT AS MUCH AS COMBAT!"));
+    $gui.setAnswer(null);
+    $gui.setStage("STORYTELLING");
+    update($gui);
+end
+
+rule "Deckbuilders question"
+when
+    $gui : GUIState( stage == "DECKBUILDERS", answer == "YES" )
+then
+    $gui.setText("Competitive Deck Builders?");
+    $gui.setOptions(Arrays.asList("COMPETITIVE", "COOPERATIVE"));
+    $gui.setAnswer(null);
+    $gui.setStage("DECKBUILDERS_TYPE");
+    update($gui);
+end
+
+rule "LotR fan check"
+when
+    $gui : GUIState( stage == "DECKBUILDERS", answer == "NO" )
+then
+    $gui.setText("Lord of the Rings fan?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("LOTR_FAN");
+    update($gui);
+end
+
+rule "Castle defense interest"
+when
+    $gui : GUIState( stage == "LOTR_FAN", answer == "NO" )
+then
+    $gui.setText("How about castle defense?");
+    $gui.setOptions(Arrays.asList("SOUNDS FUN!", "NOT FOR ME"));
+    $gui.setAnswer(null);
+    $gui.setStage("CASTLE_DEFENSE");
+    update($gui);
+end
+
+rule "Castle defense fun"
+when
+    $gui : GUIState( stage == "CASTLE_DEFENSE", answer == "SOUNDS FUN!" )
+then
+    $gui.setText("Cooperative or Competitive?");
+    $gui.setOptions(Arrays.asList("COMPETITIVE", "COOPERATIVE"));
+    $gui.setAnswer(null);
+    $gui.setStage("CASTLE_MODE");
+    update($gui);
+end
+
+rule "Conquest question"
+when
+    $gui : GUIState( stage == "CASTLE_DEFENSE", answer == "NOT FOR ME" )
+then
+    $gui.setText("Conquest in a fantasy world?");
+    $gui.setOptions(Arrays.asList("YES", "NO"));
+    $gui.setAnswer(null);
+    $gui.setStage("CONQUEST");
+    update($gui);
+end
+
+rule "Epic conquest"
+when
+    $gui : GUIState( stage == "CONQUEST", answer == "YES" )
+then
+    $gui.setText("Epic?");
+    $gui.setOptions(Arrays.asList("YES! IT'S GOTTA BE BIG", "NO, KEEP IT QUICK"));
+    $gui.setAnswer(null);
+    $gui.setStage("EPIC_CONQUEST");
+    update($gui);
+end
+
+rule "Everyday life theme"
+when
+    $gui : GUIState( stage == "CONQUEST", answer == "NO" )
+then
+    $gui.setText("Everday life, eh?");
+    $gui.setOptions(Arrays.asList(
+        "RUNNING A BUSINESS",
+        "RELAXING AFTER WORK",
+        "ANNIHILATING YOUR BUSINESS RIVALS"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("EVERYDAY");
+    update($gui);
+end
+
+rule "Horror favorite monster"
+when
+    $gui : GUIState( stage == "THEME", answer == "HORROR" )
+then
+    $gui.setText("What's your favorite monster?");
+    $gui.setOptions(Arrays.asList("ZOMBIES", "CTHULHU", "CLASSIC MOVIE MONSTERS"));
+    $gui.setAnswer(null);
+    $gui.setStage("FAV_MONSTER");
+    update($gui);
+end
+
+rule "Classic monsters style"
+when
+    $gui : GUIState( stage == "FAV_MONSTER", answer == "CLASSIC MOVIE MONSTERS" )
+then
+    $gui.setText("Card-based combat or a mystery?");
+    $gui.setOptions(Arrays.asList("I'LL CRUSCH YOU!", "I'D RATHER BE A DETECTIVE"));
+    $gui.setAnswer(null);
+    $gui.setStage("CARD_OR_MYSTERY");
+    update($gui);
+end
+
+rule "Cthulhu side choice"
+when
+    $gui : GUIState( stage == "FAV_MONSTER", answer == "CTHULHU" )
+then
+    $gui.setText("Ever wanted to play on his side?");
+    $gui.setOptions(Arrays.asList(
+        "WELL, MAYBE A LITTLE...",
+        "SIDE WITH ELDER GODS? NO! HUMANITY STANDS TOGETHER"
+    ));
+    $gui.setAnswer(null);
+    $gui.setStage("HIS_SIDE");
+    update($gui);
+end
+
+rule "Cthulhu humanity side"
+when
+    $gui : GUIState( stage == "HIS_SIDE", answer == "SIDE WITH ELDER GODS? NO! HUMANITY STANDS TOGETHER" )
+then
+    $gui.setText("An epic investigation or a gateway game?");
+    $gui.setOptions(Arrays.asList("I WANT AN EPIC!", "GATEWAY, PLEASE"));
+    $gui.setAnswer(null);
+    $gui.setStage("INVESTIGATION_TYPE");
+    update($gui);
+end
+
+rule "Zombies boards or cards"
+when
+    $gui : GUIState( stage == "FAV_MONSTER", answer == "ZOMBIES" )
+then
+    $gui.setText("Boards or Cards?");
+    $gui.setOptions(Arrays.asList("BOARD GAME", "CARD GAME"));
+    $gui.setAnswer(null);
+    $gui.setStage("ZOMBIE_FORMAT");
+    update($gui);
+end
+
+rule "Zombie board type"
+when
+    $gui : GUIState( stage == "ZOMBIE_FORMAT", answer == "BOARD GAME" )
+then
+    $gui.setText("Survival of the Fittest or Zombies vs Humans?");
+    $gui.setOptions(Arrays.asList("SURVIVAL OF THE FITTEST", "ZOMBIES VS. HUMANS"));
+    $gui.setAnswer(null);
+    $gui.setStage("ZOMBIE_STYLE");
+    update($gui);
+end
+
+rule "Zombies vs humans"
+when
+    $gui : GUIState( stage == "ZOMBIE_STYLE", answer == "ZOMBIES VS. HUMANS" )
+then
+    $gui.setText("Does anyone want to play as the zombies?");
+    $gui.setOptions(Arrays.asList("WE'RE ALL HUMANS HERE", "SURE! BRAAAAINS..."));
+    $gui.setAnswer(null);
+    $gui.setStage("PLAY_AS_ZOMBIES");
+    update($gui);
+end
+
+/* =========================================================
+   REKOMENDACJE
+   ========================================================= */
+
+rule "Solo – historyczne"
+when
+    $gui : GUIState( stage == "SOLO_THEME", answer == "HISTORIC BATTLES" )
+then
+    insert(new Recommendation("Field Commander Series"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Solo – wsparcie lotnicze"
+when
+    $gui : GUIState( stage == "SOLO_THEME", answer == "MODERN AIR SUPPORT" )
+then
+    insert(new Recommendation("Thunderbolt: Apache Leader"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Solo – science fiction"
+when
+    $gui : GUIState( stage == "SOLO_THEME", answer == "SCIENCE FICTION" )
+then
+    insert(new Recommendation("Space Infantry"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Risk – tak"
+when
+    $gui : GUIState( stage == "RISK", answer == "YES" )
+then
+    insert(new Recommendation("Risk: Legacy"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Historia œwiata"
+when
+    $gui : GUIState( stage == "HISTORY_OR_FANTASY", answer == "WORLD HISTORY" )
+then
+    insert(new Recommendation("Memoir '44"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "High fantasy"
+when
+    $gui : GUIState( stage == "HISTORY_OR_FANTASY", answer == "HIGH FANTASY" )
+then
+    insert(new Recommendation("Battles of Westeros"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Rzym – tak"
+when
+    $gui : GUIState( stage == "ROMANS", answer == "YES" )
+then
+    insert(new Recommendation("Commands & Colors: Ancients"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "XIX wiek"
+when
+    $gui : GUIState( stage == "BATTLE_LINES", answer == "YES" )
+then
+    insert(new Recommendation("1812: The Invasion of Canada"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "WW2 – koœci"
+when
+    $gui : GUIState( stage == "DRIVEN_COMBAT", answer == "*ROLL ROLL ROLL*" )
+then
+    insert(new Recommendation("Tide of Iron"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "WW2 – karty"
+when
+    $gui : GUIState( stage == "DRIVEN_COMBAT", answer == "*SHUFFLE SHUFFLE*" )
+then
+    insert(new Recommendation("Combat Commander Series"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Nowoczesna wojna – tak"
+when
+    $gui : GUIState( stage == "MODERN_WAR", answer == "YES, I LIKE THE IMMEDIACY" )
+then
+    insert(new Recommendation("Labyrinth: The War on Terror"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Alt-history – strategic"
+when
+    $gui : GUIState( stage == "TAC_OR_STRAT", answer == "STRATEGIC" )
+then
+    insert(new Recommendation("Fortress America"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Alt-history – tactical"
+when
+    $gui : GUIState( stage == "TAC_OR_STRAT", answer == "TACTICAL" )
+then
+    insert(new Recommendation("Dust Tactics"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Sci-Fi – statki"
+when
+    $gui : GUIState( stage == "SHIPS_OR_MECHS", answer == "SHIPS" )
+then
+    insert(new Recommendation("Battleship Galaxies"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Sci-Fi – Mechs"
+when
+    $gui : GUIState( stage == "SHIPS_OR_MECHS", answer == "MECHS!" )
+then
+    insert(new Recommendation("Battletech"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Star Trek – Competitive"
+when
+    $gui : GUIState( stage == "ONE_OR_TOGETHER", answer == "COMPETETIVE" )
+then
+    insert(new Recommendation("Star Trek: Fleet Captains"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Star Trek – Cooperative"
+when
+    $gui : GUIState( stage == "ONE_OR_TOGETHER", answer == "COOPERATIVE" )
+then
+    insert(new Recommendation("Star Trek Expeditions"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Battlestar – Yes"
+when
+    $gui : GUIState( stage == "BATTLESTAR", answer == "YES" )
+then
+    insert(new Recommendation("Battlestar Galactica: the Board Game"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Epic – All Day"
+when
+    $gui : GUIState( stage == "HOW_EPIC", answer == "WE'VE GOT ALL DAY" )
+then
+    insert(new Recommendation("Twillight Imperium: 3rd Edition"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Epic – Work Night"
+when
+    $gui : GUIState( stage == "HOW_EPIC", answer == "IT IS A WORK NIGHT..." )
+then
+    insert(new Recommendation("Eclipse"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Doing Battle – Space"
+when
+    $gui : GUIState( stage == "DOING_BATTLE", answer == "IN SPACE" )
+then
+    insert(new Recommendation("Cosmic Encounter"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Doing Battle – Galactic Centre"
+when
+    $gui : GUIState( stage == "DOING_BATTLE", answer == "FOR THE GALACTIC CENTRE" )
+then
+    insert(new Recommendation("Rex: Final Days of an Empire"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Doing Battle – Earth"
+when
+    $gui : GUIState( stage == "DOING_BATTLE", answer == "FOR EARTH!" )
+then
+    insert(new Recommendation("Conquest of Planet Earth"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Merchant – Serious Business"
+when
+    $gui : GUIState( stage == "SERIOUSLY", answer == "IT'S SERIOUS BUSINESS" )
+then
+    insert(new Recommendation("Merchant of Venus"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Merchant – Giggle"
+when
+    $gui : GUIState( stage == "SERIOUSLY", answer == "NAH, WE JUST WANT A GIGGLE" )
+then
+    insert(new Recommendation("Galaxy Trucker"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "How Will – High Speed Planning"
+when
+    $gui : GUIState( stage == "HOW_WILL", answer == "TEAMWORK AND HIGH-SPEED PLANNING" )
+then
+    insert(new Recommendation("Space Alert"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "How Will – Dexterity"
+when
+    $gui : GUIState( stage == "HOW_WILL", answer == "TEAMWORK AND DEXTERITY" )
+then
+    insert(new Recommendation("Space Cadets"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Not Alien – Athlete"
+when
+    $gui : GUIState( stage == "NOT_ALIEN", answer == "ATHLETE" )
+then
+    insert(new Recommendation("Dreadball: The Futuristic Sport Game"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Not Alien – Galactic Corporation"
+when
+    $gui : GUIState( stage == "NOT_ALIEN", answer == "GALACTIC CORPORATION" )
+then
+    insert(new Recommendation("Phantom League"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Deck Builder – Yes"
+when
+    $gui : GUIState( stage == "DECK_BUILDER", answer == "YES" )
+then
+    insert(new Recommendation("Core Worlds"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Living Card – Yes"
+when
+    $gui : GUIState( stage == "LIVING_CARD", answer == "YES" )
+then
+    insert(new Recommendation("Android: Netrunner"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Living Card – No"
+when
+    $gui : GUIState( stage == "LIVING_CARD", answer == "NO" )
+then
+    insert(new Recommendation("Race for the Galaxy"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Dungeon Crawling – Not Serious"
+when
+    $gui : GUIState( stage == "SERIOUS_ONE", answer == "NO" )
+then
+    insert(new Recommendation("Munchkin"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Fight"
+when
+    $gui : GUIState( stage == "FIGHT_OR_MANEVUER", answer == "FIGHT" )
+then
+    insert(new Recommendation("Claustrophobia"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Maneuver"
+when
+    $gui : GUIState( stage == "FIGHT_OR_MANEVUER", answer == "MANEUVER" )
+then
+    insert(new Recommendation("Dungeon Twister 2: Prison"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Kids – Yes"
+when
+    $gui : GUIState( stage == "KIDS", answer == "YES" )
+then
+    insert(new Recommendation("Mice & Mystics"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Kids – No"
+when
+    $gui : GUIState( stage == "KIDS", answer == "NO" )
+then
+    insert(new Recommendation("Dungeon and Dragons: Legend of Drizzt"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Campaign – Yes"
+when
+    $gui : GUIState( stage == "CAMPAIGN", answer == "YES" )
+then
+    insert(new Recommendation("Descent: Journeys in the Dark 2nd Edition"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Campaign – One Game"
+when
+    $gui : GUIState( stage == "CAMPAIGN", answer == "JUST ONE GAME" )
+then
+    insert(new Recommendation("Dungeon Run"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Managing Dungeon – Yes"
+when
+    $gui : GUIState( stage == "MANAGING_DUNGEON", answer == "YES" )
+then
+    insert(new Recommendation("Dungeon Lords"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Backstab Coop"
+when
+    $gui : GUIState( stage == "COMP_OR_COOP_QUESTS", answer == "COOPERATIVE - IF I CAN BACKSTAB" )
+then
+    insert(new Recommendation("Shadows over Camelot"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Boards"
+when
+    $gui : GUIState( stage == "BOARD_OR_CARD", answer == "BOARDS" )
+then
+    insert(new Recommendation("Defenders of the Realm"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Cards"
+when
+    $gui : GUIState( stage == "BOARD_OR_CARD", answer == "CARDS" )
+then
+    insert(new Recommendation("Lord of the Rings Living Card Game"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Random events - Strategy matters"
+when
+    $gui : GUIState( stage == "RANDOM_EVENTS", answer == "YES. STRATEGY MATTERS" )
+then
+    insert(new Recommendation("Mage Knight"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Storytelling - yes"
+when
+    $gui : GUIState( stage == "STORYTELLING", answer == "YES" )
+then
+    insert(new Recommendation("Tales of the Arabian Nights"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Storytelling - no"
+when
+    $gui : GUIState( stage == "STORYTELLING", answer == "NOT AS MUCH AS COMBAT!" )
+then
+    insert(new Recommendation("Talisman"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Deckbuilder - competitive"
+when
+    $gui : GUIState( stage == "DECKBUILDERS_TYPE", answer == "COMPETITIVE" )
+then
+    insert(new Recommendation("Thunderstone: Advance"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Deckbuilder - cooperative"
+when
+    $gui : GUIState( stage == "DECKBUILDERS_TYPE", answer == "COOPERATIVE" )
+then
+    insert(new Recommendation("Rune Age"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "LotR fan - yes"
+when
+    $gui : GUIState( stage == "LOTR_FAN", answer == "YES" )
+then
+    insert(new Recommendation("War of the Ring"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Castle - competitive"
+when
+    $gui : GUIState( stage == "CASTLE_MODE", answer == "COMPETITIVE" )
+then
+    insert(new Recommendation("Dragon Rampage"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Castle - cooperative"
+when
+    $gui : GUIState( stage == "CASTLE_MODE", answer == "COOPERATIVE" )
+then
+    insert(new Recommendation("Castle Panic"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Epic - big"
+when
+    $gui : GUIState( stage == "EPIC_CONQUEST", answer == "YES! IT'S GOTTA BE BIG" )
+then
+    insert(new Recommendation("Runewars"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Epic - quick"
+when
+    $gui : GUIState( stage == "EPIC_CONQUEST", answer == "NO, KEEP IT QUICK" )
+then
+    insert(new Recommendation("Small World"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Business sim"
+when
+    $gui : GUIState( stage == "EVERYDAY", answer == "RUNNING A BUSINESS" )
+then
+    insert(new Recommendation("Dungeon Petz"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Relaxing"
+when
+    $gui : GUIState( stage == "EVERYDAY", answer == "RELAXING AFTER WORK" )
+then
+    insert(new Recommendation("Red Dragon Inn"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Annihilation"
+when
+    $gui : GUIState( stage == "EVERYDAY", answer == "ANNIHILATING YOUR BUSINESS RIVALS" )
+then
+    insert(new Recommendation("Mage Wars"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Classic monsters card combat"
+when
+    $gui : GUIState( stage == "CARD_OR_MYSTERY", answer == "I'LL CRUSCH YOU!" )
+then
+    insert(new Recommendation("Nightfall"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Classic monsters mystery"
+when
+    $gui : GUIState( stage == "CARD_OR_MYSTERY", answer == "I'D RATHER BE A DETECTIVE" )
+then
+    insert(new Recommendation("Betrayal at House on the Hill"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Cthulhu epic investigation"
+when
+    $gui : GUIState( stage == "INVESTIGATION_TYPE", answer == "I WANT AN EPIC!" )
+then
+    insert(new Recommendation("Arkham Horror"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Cthulhu gateway game"
+when
+    $gui : GUIState( stage == "INVESTIGATION_TYPE", answer == "GATEWAY, PLEASE" )
+then
+    insert(new Recommendation("Elder Sign"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Cthulhu on dark side"
+when
+    $gui : GUIState( stage == "HIS_SIDE", answer == "WELL, MAYBE A LITTLE..." )
+then
+    insert(new Recommendation("Mansions of Madness"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Zombie card game"
+when
+    $gui : GUIState( stage == "ZOMBIE_FORMAT", answer == "CARD GAME" )
+then
+    insert(new Recommendation("Resident Evil Deckbuilding Game"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Zombie survival fittest"
+when
+    $gui : GUIState( stage == "ZOMBIE_STYLE", answer == "SURVIVAL OF THE FITTEST" )
+then
+    insert(new Recommendation("City of Horror"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Humans only"
+when
+    $gui : GUIState( stage == "PLAY_AS_ZOMBIES", answer == "WE'RE ALL HUMANS HERE" )
+then
+    insert(new Recommendation("Zombicide"));
+    $gui.setStage("END");
+    update($gui);
+end
+
+rule "Play as zombies"
+when
+    $gui : GUIState( stage == "PLAY_AS_ZOMBIES", answer == "SURE! BRAAAAINS..." )
+then
+    insert(new Recommendation("Last Night on Earth"));
+    $gui.setStage("END");
+    update($gui);
+end
